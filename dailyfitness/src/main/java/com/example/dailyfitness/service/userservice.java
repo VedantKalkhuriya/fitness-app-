@@ -1,10 +1,10 @@
 package com.example.dailyfitness.service;
 
-import com.example.dailyfitness.Entity.userEntry;
+import com.example.dailyfitness.Entity.UserProfile;
 import com.example.dailyfitness.Repository.userRepo;
-import com.example.dailyfitness.Repository.workoutrepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,21 +16,44 @@ public class userservice {
     @Autowired
     private userRepo userrepo;
 
+    @Autowired  // Remove 'static' keyword - this is the fix!
+    private PasswordEncoder passwordEncoder;
 
-    public void saveuser(userEntry user ) {
-        userrepo.save(user);
+    public boolean saveNewUser(UserProfile user) {
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRoles("USER");
+            userrepo.save(user);
+            return true;
+        } catch (Exception e) {
+            log.error("Error saving user: ", e);  // Better logging
+            return false;
+        }
+    }
+
+
+    public UserProfile saveuser(UserProfile user ) {
+        return userrepo.save(user);
 
     }
-    public List<userEntry> getuser() {
+    public List<UserProfile> getuser() {
         return userrepo.findAll();
 
     }
 
-    public Optional<userEntry> getuserbyid(Long id) {
+    public Optional<UserProfile> findByNameOptional(String name) {
+        return userrepo.findByName(name);
+    }
+    public UserProfile findByName(String name) {
+        return userrepo.findByname(name); //
+    }
+
+
+
+    public Optional<UserProfile> getuserbyid(Long id) {
         return userrepo.findById(id);
     }
     public void deleteuserbyid(Long id) {
         userrepo.deleteById(id);
     }
 }
-
