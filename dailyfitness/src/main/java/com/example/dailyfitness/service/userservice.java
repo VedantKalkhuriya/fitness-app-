@@ -32,10 +32,6 @@ public class userservice {
     }
 
 
-    public UserProfile saveuser(UserProfile user ) {
-        return userrepo.save(user);
-
-    }
     public List<UserProfile> getuser() {
         return userrepo.findAll();
 

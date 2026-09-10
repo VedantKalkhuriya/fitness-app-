@@ -1,0 +1,5 @@
+# Created at 2026-09-10T18:09:42.206
+Boot Manifest-JAR contains absolute paths in classpath 'Y:\fitness-app-\dailyfitness\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
