@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(name = "uk_workout_user_submission", columnNames = {"user_id", "submission_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +24,11 @@ public class WorkoutLog{
     private LocalDate workoutDate;
 
     private String workoutType;      // "Chest", "Legs", "Cardio", "Full Body"
+
+    private String submissionId;
+
+    @Column(length = 1000)
+    private String notes;
 
     private int durationMinutes;     // how long they worked out
 

@@ -4,12 +4,10 @@ export default function Topbar({ title }) {
   const streak = useSelector((state) => state.workout.summary?.currentStreak ?? 0);
 
   return (
-    <div className="sticky top-0 z-40 flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-8 py-5 backdrop-blur">
-      <div className="text-xl font-black uppercase tracking-[0.2em] text-slate-100">{title}</div>
-      <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-300">
-        <span>🔥</span>
-        <span>{streak} day streak</span>
-      </div>
+    <div className="fitai-pagebar">
+      <div>{title}</div>
+      <div className="fitai-pagebar-streak"><span>?</span><span>{streak} day streak</span></div>
+      <style>{`.fitai-pagebar{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 0;color:#f0f3f0;font-size:12px;font-weight:650;letter-spacing:.015em}.fitai-pagebar-streak{display:flex;align-items:center;gap:7px;color:#c7ed8a;font-size:10px;font-weight:550}.fitai-pagebar-streak span:first-child{font-size:13px}@media(max-width:760px){.fitai-pagebar{padding:12px 16px 0}}`}</style>
     </div>
   );
 }

@@ -1,52 +1,23 @@
-export default function ExerciseRow({ exercise, onChange, onRemove }) {
-  function update(field) {
-    return (e) => onChange({ ...exercise, [field]: e.target.value });
-  }
-
+export default function ExerciseRow({ exercise, index, onUpdate, onSetChange, onAddSet, onRemoveSet, onRemove, onStartRest, restSeconds }) {
   return (
-    <div className="grid grid-cols-[minmax(0,2fr)_80px_80px_80px_minmax(0,1.2fr)_36px] gap-2 rounded-xl border border-slate-700 bg-slate-800/70 p-2">
-      <input
-        type="text"
-        placeholder="Exercise name"
-        value={exercise.exerciseName}
-        onChange={update('exerciseName')}
-        className="w-full rounded-lg border border-slate-600 bg-slate-900/80 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-      />
-      <input
-        type="number"
-        placeholder="4"
-        value={exercise.sets}
-        onChange={update('sets')}
-        className="w-full rounded-lg border border-slate-600 bg-slate-900/80 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-      />
-      <input
-        type="number"
-        placeholder="10"
-        value={exercise.reps}
-        onChange={update('reps')}
-        className="w-full rounded-lg border border-slate-600 bg-slate-900/80 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-      />
-      <input
-        type="number"
-        placeholder="0"
-        value={exercise.weightKg}
-        onChange={update('weightKg')}
-        className="w-full rounded-lg border border-slate-600 bg-slate-900/80 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-      />
-      <input
-        type="text"
-        placeholder="Notes"
-        value={exercise.notes}
-        onChange={update('notes')}
-        className="w-full rounded-lg border border-slate-600 bg-slate-900/80 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-      />
-      <button
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 text-base font-semibold text-rose-300 transition hover:bg-rose-500/20"
-        type="button"
-        onClick={onRemove}
-      >
-        ×
-      </button>
-    </div>
+    <article className="lw-exercise-card">
+      <div className="lw-exercise-heading">
+        <span className="lw-exercise-index">{String(index + 1).padStart(2, '0')}</span>
+        <label className="lw-exercise-name"><span className="lw-visually-hidden">Exercise name</span><input value={exercise.exerciseName} onChange={(event) => onUpdate('exerciseName', event.target.value)} placeholder="Search or name an exercise" list="fitai-exercise-catalog" required maxLength={150}/></label>
+        <span className="lw-set-count">{exercise.setRows.filter((set) => set.completed).length}/{exercise.setRows.length} sets</span>
+        <button className="lw-remove-exercise" type="button" onClick={onRemove} aria-label={`Remove ${exercise.exerciseName || 'exercise'}`}>×</button>
+      </div>
+      <div className="lw-set-head"><span>SET</span><span>WEIGHT (KG)</span><span>REPS</span><span>DONE</span><span/></div>
+      <div className="lw-set-list">
+        {exercise.setRows.map((set, setIndex) => <div className={`lw-set-row ${set.completed ? 'complete' : ''}`} key={set.id}>
+          <span className="lw-set-number">{String(setIndex + 1).padStart(2, '0')}</span>
+          <label><span className="lw-mobile-label">Weight · kg</span><input aria-label={`Set ${setIndex + 1} weight in kilograms`} type="number" min="0" max="2000" step="0.25" inputMode="decimal" value={set.weightKg} onChange={(event) => onSetChange(set.id, 'weightKg', event.target.value)} placeholder="0"/></label>
+          <label><span className="lw-mobile-label">Reps</span><input aria-label={`Set ${setIndex + 1} repetitions`} type="number" min="1" max="1000" inputMode="numeric" value={set.reps} onChange={(event) => onSetChange(set.id, 'reps', event.target.value)} placeholder="10"/></label>
+          <label className="lw-complete-control"><span className="lw-mobile-label">Completed</span><input type="checkbox" checked={set.completed} onChange={(event) => onSetChange(set.id, 'completed', event.target.checked)} aria-label={`Mark set ${setIndex + 1} complete`}/><span className="lw-checkmark">✓</span></label>
+          <button className="lw-remove-set" type="button" onClick={() => onRemoveSet(set.id)} aria-label={`Remove set ${setIndex + 1}`} disabled={exercise.setRows.length === 1}>×</button>
+        </div>)}
+      </div>
+      <div className="lw-exercise-footer"><button type="button" className="lw-text-action" onClick={onAddSet}>＋ Add set</button>{restSeconds > 0 && <button type="button" className="lw-text-action" onClick={() => onStartRest(restSeconds)}>Start {restSeconds}s rest timer</button>}</div>
+    </article>
   );
 }

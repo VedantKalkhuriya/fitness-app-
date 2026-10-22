@@ -12,7 +12,7 @@ const PAGE_TITLES = {
   'log-workout': 'Log Workout',
   history: 'History',
   feedback: 'AI Feedback',
-  profile: 'My Profile',
+  profile: 'Settings',
 };
 
 export default function DashboardLayout() {
@@ -28,11 +28,11 @@ export default function DashboardLayout() {
   }, [dispatch, userId]);
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="flex min-h-screen flex-col bg-[#050505] text-slate-100">
       <Sidebar />
-      <main className="ml-60 flex-1">
+      <main className="min-w-0 flex-1">
         <Topbar title={title} />
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-6 max-md:p-4">
           <Outlet />
         </div>
       </main>

@@ -3,12 +3,14 @@ package com.example.dailyfitness.service;
 import com.example.dailyfitness.DTO.WorkoutLogRequest;
 import com.example.dailyfitness.DTO.WorkoutSummary;
 import com.example.dailyfitness.Entity.ExerciseLog;
+import com.example.dailyfitness.Entity.ExerciseSetLog;
 import com.example.dailyfitness.Entity.WorkoutLog;
 import com.example.dailyfitness.Repository.WorkoutLogRepository;
 import com.example.dailyfitness.Repository.userRepo;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,8 +30,12 @@ public class WorkoutTrackingService {
         this.chatClient = builder.build();
     }
 
-    // ✅ Log a workout
+    @Transactional
     public WorkoutLog logWorkout(Long userId, WorkoutLogRequest request) {
+        if (request.getSubmissionId() != null && !request.getSubmissionId().isBlank()) {
+            var existing = workoutLogRepository.findByUserIdAndSubmissionId(userId, request.getSubmissionId());
+            if (existing.isPresent()) return existing.get();
+        }
 
         WorkoutLog log = new WorkoutLog();
         log.setUserId(userId);
@@ -37,26 +43,49 @@ public class WorkoutTrackingService {
         log.setDurationMinutes(request.getDurationMinutes());
         log.setFeeling(request.getFeeling());
         log.setCaloriesBurned(request.getCaloriesBurned());
+        log.setWorkoutDate(request.getWorkoutDate() == null ? LocalDate.now() : request.getWorkoutDate());
+        log.setNotes(request.getNotes());
+        log.setSubmissionId(request.getSubmissionId());
 
-        // Map exercises
         List<ExerciseLog> exercises = request.getExercises().stream()
                 .map(e -> {
                     ExerciseLog ex = new ExerciseLog();
                     ex.setExerciseName(e.getExerciseName());
-                    ex.setSets(e.getSets());
-                    ex.setReps(e.getReps());
-                    ex.setWeightKg(e.getWeightKg());
                     ex.setNotes(e.getNotes());
+                    if (e.getSetDetails() != null && !e.getSetDetails().isEmpty()) {
+                        List<ExerciseSetLog> setDetails = e.getSetDetails().stream().map(set -> {
+                            ExerciseSetLog detail = new ExerciseSetLog();
+                            detail.setSetNumber(set.getSetNumber());
+                            detail.setReps(set.getReps());
+                            detail.setWeightKg(set.getWeightKg());
+                            detail.setCompleted(set.isCompleted());
+                            detail.setNotes(set.getNotes());
+                            return detail;
+                        }).toList();
+                        ex.setSetDetails(setDetails);
+                        ex.setSets(setDetails.size());
+                        var representativeSet = setDetails.stream().filter(ExerciseSetLog::isCompleted)
+                                .findFirst().orElse(setDetails.get(0));
+                        ex.setReps(representativeSet.getReps());
+                        ex.setWeightKg(representativeSet.getWeightKg());
+                    } else {
+                        ex.setSets(e.getSets());
+                        ex.setReps(e.getReps());
+                        ex.setWeightKg(e.getWeightKg());
+                    }
                     return ex;
                 }).toList();
 
         log.setExercises(exercises);
-
-        // Get AI feedback on this session
-        String feedback = getSessionFeedback(log);
-        log.setAiFeedback(feedback);
-
-        return workoutLogRepository.save(log);
+        log.setAiFeedback("Workout saved. AI feedback is unavailable right now.");
+        WorkoutLog saved = workoutLogRepository.save(log);
+        try {
+            saved.setAiFeedback(getSessionFeedback(saved));
+            return workoutLogRepository.save(saved);
+        } catch (Exception ignored) {
+            // Persisting the workout is the primary operation; a coach outage must not lose it.
+            return saved;
+        }
     }
 
     // ✅ Get all workout history
@@ -77,18 +106,23 @@ public class WorkoutTrackingService {
     public int getCurrentStreak(Long userId) {
         List<WorkoutLog> logs = workoutLogRepository
                 .findByUserIdOrderByWorkoutDateDesc(userId);
-
         if (logs.isEmpty()) return 0;
 
-        int streak = 0;
+        // Count distinct consecutive calendar dates. A session today or yesterday
+        // keeps the streak active; multiple sessions on one date count once.
         LocalDate checkDate = LocalDate.now();
+        LocalDate latest = logs.get(0).getWorkoutDate();
+        if (latest == null || latest.isBefore(checkDate.minusDays(1))) return 0;
+        if (latest.isBefore(checkDate)) checkDate = checkDate.minusDays(1);
 
+        int streak = 0;
         for (WorkoutLog log : logs) {
-            if (log.getWorkoutDate().equals(checkDate) ||
-                    log.getWorkoutDate().equals(checkDate.minusDays(streak))) {
+            LocalDate date = log.getWorkoutDate();
+            if (date == null || date.isAfter(checkDate)) continue;
+            if (date.equals(checkDate)) {
                 streak++;
                 checkDate = checkDate.minusDays(1);
-            } else {
+            } else if (date.isBefore(checkDate)) {
                 break;
             }
         }
@@ -97,10 +131,11 @@ public class WorkoutTrackingService {
 
     // ✅ Weekly summary stats
     public WorkoutSummary getWeeklySummary(Long userId) {
-        LocalDate weekAgo = LocalDate.now().minusDays(7);
+        LocalDate today = LocalDate.now();
+        LocalDate weekStart = today.minusDays((today.getDayOfWeek().getValue() + 6) % 7);
         List<WorkoutLog> weekLogs = workoutLogRepository
                 .findByUserIdAndWorkoutDateBetween(
-                        userId, weekAgo, LocalDate.now()
+                        userId, weekStart, today
                 );
 
         int totalWorkouts   = weekLogs.size();
@@ -129,6 +164,11 @@ public class WorkoutTrackingService {
                     ex.getExerciseName(), ex.getSets(),
                     ex.getReps(), ex.getWeightKg(), ex.getNotes()
             ));
+            for (ExerciseSetLog set : ex.getSetDetails()) {
+                exerciseDetails.append(String.format("  Set %d: %d reps @ %.1f kg (%s)%n",
+                        set.getSetNumber(), set.getReps(), set.getWeightKg(),
+                        set.isCompleted() ? "completed" : "not completed"));
+            }
         }
 
         String prompt = """

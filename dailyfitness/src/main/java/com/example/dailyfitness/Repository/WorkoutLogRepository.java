@@ -27,5 +27,7 @@ public interface WorkoutLogRepository extends JpaRepository<WorkoutLog, Long> {
 
     // Count total workouts
     long countByUserId(Long userId);
+
+    Optional<WorkoutLog> findByUserIdAndSubmissionId(Long userId, String submissionId);
 }
 

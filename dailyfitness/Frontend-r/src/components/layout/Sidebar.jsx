@@ -2,29 +2,14 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
 
-const NAV_SECTIONS = [
-  {
-    label: 'Main',
-    items: [
-      { to: '/dashboard/overview', icon: '🏠', label: 'Overview' },
-      { to: '/dashboard/diet', icon: '🥗', label: 'Diet Plan' },
-      { to: '/dashboard/workout-plan', icon: '💪', label: 'Workout Plan' },
-    ],
-  },
-  {
-    label: 'Tracking',
-    items: [
-      { to: '/dashboard/log-workout', icon: '📝', label: 'Log Workout' },
-      { to: '/dashboard/history', icon: '📅', label: 'History' },
-    ],
-  },
-  {
-    label: 'AI Coach',
-    items: [
-      { to: '/dashboard/feedback', icon: '🤖', label: 'AI Feedback' },
-      { to: '/dashboard/profile', icon: '👤', label: 'My Profile' },
-    ],
-  },
+const NAV_ITEMS = [
+  { to: '/dashboard/overview', label: 'Overview' },
+  { to: '/dashboard/workout-plan', label: 'Workouts' },
+  { to: '/dashboard/diet', label: 'Nutrition' },
+  { to: '/dashboard/history', label: 'Progress' },
+  { to: '/dashboard/feedback', label: 'AI Coach' },
+  { to: '/dashboard/log-workout', label: 'Log Workout' },
+  { to: '/dashboard/profile', label: 'Settings' },
 ];
 
 export default function Sidebar() {
@@ -40,60 +25,26 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-60 border-r border-slate-700 bg-slate-900/90">
-      <div className="border-b border-slate-700 px-6 py-7">
-        <div className="text-3xl font-black uppercase tracking-[0.2em] text-emerald-400">
-          FIT<span className="text-slate-100">AI</span>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 border-b border-slate-700 px-5 py-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-base">
-          💪
-        </div>
-        <div>
-          <div className="max-w-[140px] truncate text-sm font-semibold text-slate-100">{userName}</div>
-          <div className="text-[11px] font-medium text-emerald-300">Pro Member</div>
-        </div>
-      </div>
-
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.label}>
-            <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              {section.label}
-            </div>
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    `flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
-                      isActive
-                        ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                        : 'border-transparent text-slate-400 hover:bg-slate-800 hover:text-slate-100'
-                    }`
-                  }
-                >
-                  <span className="text-base">{item.icon}</span>
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          </div>
+    <header className="fitai-topnav">
+      <NavLink className="fitai-wordmark" to="/dashboard/overview" aria-label="FITAI home">
+        <span className="fitai-mark" aria-hidden="true">?</span>
+        <span>FIT<span>AI</span></span>
+      </NavLink>
+      <nav className="fitai-nav" aria-label="Main navigation">
+        {NAV_ITEMS.map((item) => (
+          <NavLink key={item.to} to={item.to} className={({ isActive }) => `fitai-nav-link${isActive ? ' active' : ''}`}>
+            {item.label}
+          </NavLink>
         ))}
       </nav>
-
-      <div className="border-t border-slate-700 px-3 py-4">
-        <button
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-300 transition hover:border-rose-400 hover:text-rose-300"
-          onClick={handleLogout}
-        >
-          <span>🚪</span>
-          <span>Sign Out</span>
+      <div className="fitai-nav-tools">
+        <button className="fitai-nav-user" onClick={() => navigate('/dashboard/profile')} aria-label={`Open ${userName}'s profile`} title={userName}>
+          <span>{userName.trim().charAt(0).toUpperCase()}</span>
+          <span className="fitai-user-name">{userName}</span>
         </button>
+        <button className="fitai-nav-signout" onClick={handleLogout} aria-label="Sign out" title="Sign out">?</button>
       </div>
-    </aside>
+      <style>{` .fitai-topnav{position:sticky;top:0;z-index:50;min-height:76px;width:100%;display:grid;grid-template-columns:minmax(140px,1fr) auto minmax(140px,1fr);align-items:center;gap:20px;padding:12px 30px;background:rgba(15,18,17,.92);border-bottom:1px solid rgba(209,224,215,.09);backdrop-filter:blur(18px)}.fitai-wordmark{display:inline-flex;align-items:center;gap:9px;width:max-content;color:#eff3ef;text-decoration:none;font-size:18px;font-weight:750;letter-spacing:-.65px}.fitai-wordmark>span:last-child>span{color:#c5f36c}.fitai-mark{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#c5f36c;color:#17200e;font-size:16px}.fitai-nav{justify-self:center;display:flex;align-items:center;gap:3px;padding:5px;border:1px solid #ffffff08;border-radius:999px;background:#252827}.fitai-nav-link{white-space:nowrap;text-decoration:none;color:#9da39f;font-size:11px;padding:9px 11px;border-radius:999px;transition:background .18s,color .18s}.fitai-nav-link:hover{color:#eff4ef}.fitai-nav-link.active{background:#353938;color:#f5f7f4;box-shadow:0 2px 8px #0003}.fitai-nav-tools{justify-self:end;display:flex;align-items:center;gap:9px}.fitai-nav-user,.fitai-nav-signout{height:39px;border:1px solid #ffffff08;border-radius:999px;background:#252827;color:#e8ece8;cursor:pointer;transition:background .18s,border-color .18s}.fitai-nav-user{display:flex;align-items:center;gap:9px;padding:4px 12px 4px 5px;font-size:11px}.fitai-nav-user>span:first-child{display:grid;place-items:center;width:29px;height:29px;border-radius:50%;background:#3a403c;color:#cbf77b;font-weight:700}.fitai-nav-user:hover,.fitai-nav-signout:hover{background:#303633;border-color:#c5f36c35}.fitai-nav-signout{width:39px;font-size:16px}.fitai-topnav a:focus-visible,.fitai-topnav button:focus-visible{outline:2px solid #c5f36c;outline-offset:2px}@media(max-width:900px){.fitai-topnav{grid-template-columns:auto 1fr auto;gap:12px;padding:11px 18px}.fitai-nav-link{padding:9px 11px;font-size:11px}}@media(max-width:680px){.fitai-topnav{min-height:65px;grid-template-columns:auto 1fr auto;gap:9px;padding:9px 12px}.fitai-wordmark{font-size:16px;gap:6px}.fitai-mark{width:25px;height:25px}.fitai-nav{justify-self:stretch;overflow-x:auto;scrollbar-width:none;justify-content:flex-start;padding:4px}.fitai-nav::-webkit-scrollbar{display:none}.fitai-nav-link{font-size:10px;padding:8px 11px}.fitai-nav-tools{gap:5px}.fitai-nav-user{width:36px;height:36px;justify-content:center;padding:3px}.fitai-nav-user>span:first-child{width:28px;height:28px}.fitai-user-name{display:none}.fitai-nav-signout{width:34px;height:36px}}@media(max-width:440px){.fitai-topnav{grid-template-columns:auto 1fr auto;gap:6px;padding-inline:9px}.fitai-nav{max-width:calc(100vw - 148px)}.fitai-nav-link{font-size:9px;padding:8px 9px}.fitai-wordmark{font-size:14px}}`}</style>
+    </header>
   );
 }

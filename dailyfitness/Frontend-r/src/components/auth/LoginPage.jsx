@@ -3,9 +3,9 @@ import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
 
 const FEATURES = [
-  { icon: '🥗', title: 'AI Diet Plans', desc: 'Personalised 7-day meal plans' },
-  { icon: '💪', title: 'Smart Workouts', desc: 'Plans tailored to your goals' },
-  { icon: '🤖', title: 'AI Coach Feedback', desc: 'Get advice on your progress' },
+  { icon: '↗', title: 'Training that fits you', desc: 'Plans shaped around your goals and schedule.' },
+  { icon: '◉', title: 'Progress you can follow', desc: 'A clearer picture of every session and milestone.' },
+  { icon: '✦', title: 'Guidance when you need it', desc: 'Personalized workout and nutrition insights.' },
 ];
 
 export default function LoginPage() {
@@ -17,110 +17,31 @@ export default function LoginPage() {
     setTab(next);
   }
 
-  return (
-    <div className="flex min-h-screen overflow-hidden bg-slate-950 text-slate-100">
-      <div className="relative flex flex-1 flex-col justify-center overflow-hidden p-16">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.18),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(16,185,129,0.10),transparent_30%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+  return <main className="auth-page">
+    <div className="auth-background-glow" aria-hidden="true"/><div className="auth-grid-texture" aria-hidden="true"/>
+    <div className="auth-shell">
+      <section className="auth-story" aria-label="FITAI introduction">
+        <a className="auth-brand" href="/login" aria-label="FITAI home"><span className="auth-brand-mark">F</span><span>FIT<span>AI</span></span></a>
+        <div className="auth-story-copy"><span className="auth-kicker"><i/> YOUR FITNESS, IN FOCUS</span><h1>Make progress<br/>feel <em>personal.</em></h1><p>One place to plan your training, build better habits, and see how far you’ve come.</p></div>
+        <div className="auth-feature-list">{FEATURES.map((feature) => <article key={feature.title}><span>{feature.icon}</span><div><strong>{feature.title}</strong><small>{feature.desc}</small></div><i>↗</i></article>)}</div>
+        <div className="auth-story-footer"><span>FITAI</span><span>YOUR NEXT SESSION STARTS HERE</span></div>
+      </section>
 
-        <div className="relative z-10">
-          <div className="text-5xl font-black uppercase tracking-[0.25em] text-emerald-400">
-            FIT<span className="text-slate-100">AI</span>
+      <section className="auth-panel" aria-label={tab === 'login' ? 'Sign in' : 'Create account'}>
+        <div className="auth-panel-inner">
+          <div className="auth-mobile-brand"><span className="auth-brand-mark">F</span><strong>FIT<span>AI</span></strong></div>
+          <div className="auth-heading"><span className="auth-kicker"><i/> {tab === 'login' ? 'WELCOME BACK' : 'START YOUR JOURNEY'}</span><h2>{tab === 'login' ? 'Good to see you.' : 'Build your routine.'}</h2><p>{tab === 'login' ? 'Sign in to pick up where you left off.' : 'Create your account and make fitness your own.'}</p></div>
+          <div className="auth-tabs" role="tablist" aria-label="Account access">
+            <button type="button" role="tab" aria-selected={tab === 'login'} className={tab === 'login' ? 'active' : ''} onClick={() => switchTab('login')}>Sign in</button>
+            <button type="button" role="tab" aria-selected={tab === 'signup'} className={tab === 'signup' ? 'active' : ''} onClick={() => switchTab('signup')}>Create account</button>
           </div>
-          <div className="mt-3 text-base text-slate-300">Your AI-powered personal fitness coach</div>
-
-          <ul className="mt-12 space-y-5">
-            {FEATURES.map((f) => (
-              <li className="flex items-center gap-4" key={f.title}>
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xl">
-                  {f.icon}
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-100">{f.title}</div>
-                  <div className="text-sm text-slate-400">{f.desc}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-16 flex gap-10">
-            <div>
-              <div className="text-4xl font-black tracking-[0.1em] text-emerald-400">10k+</div>
-              <div className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-400">Active Users</div>
-            </div>
-            <div>
-              <div className="text-4xl font-black tracking-[0.1em] text-emerald-400">50k+</div>
-              <div className="mt-1 text-xs uppercase tracking-[0.12em] text-slate-400">Workouts Logged</div>
-            </div>
-          </div>
+          {error && <div className="auth-error" role="alert"><span>!</span><p>{error}</p><button type="button" onClick={() => setError('')} aria-label="Dismiss error">×</button></div>}
+          <div key={tab} className="auth-form-wrap">{tab === 'login' ? <LoginForm onError={setError}/> : <SignupForm onError={setError}/>}</div>
+          {tab === 'login' && import.meta.env.DEV && <div className="auth-demo"><span>DEV PREVIEW</span><p>Username <strong>demo</strong><b>·</b> Password <strong>demo@1234</strong></p></div>}
+          <div className="auth-privacy"><span>⌑</span><p>Your account details are protected and used to personalize your FITAI experience.</p></div>
+          <div className="auth-legal">By continuing, you agree to use FITAI as a fitness support tool. It does not replace professional medical advice.</div>
         </div>
-      </div>
-
-      <div className="flex w-[480px] items-center justify-center border-l border-slate-700 bg-slate-900/80 p-12">
-        <div className="w-full">
-          <div className="mb-8">
-            <div className="text-4xl font-black uppercase tracking-[0.2em] text-slate-100">
-              {tab === 'login' ? 'WELCOME' : 'JOIN US'}
-            </div>
-            <div className="mt-2 text-sm text-slate-400">
-              {tab === 'login' ? 'Sign in to your fitness journey' : 'Start your transformation today'}
-            </div>
-          </div>
-
-          <div className="mb-8 flex gap-1 rounded-2xl bg-slate-800 p-1">
-            <button
-              className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                tab === 'login'
-                  ? 'bg-emerald-400 text-slate-950'
-                  : 'text-slate-400 hover:text-slate-100'
-              }`}
-              onClick={() => switchTab('login')}
-            >
-              Sign In
-            </button>
-            <button
-              className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                tab === 'signup'
-                  ? 'bg-emerald-400 text-slate-950'
-                  : 'text-slate-400 hover:text-slate-100'
-              }`}
-              onClick={() => switchTab('signup')}
-            >
-              Sign Up
-            </button>
-          </div>
-
-          <div
-            className={`mb-4 rounded-xl border px-3 py-2.5 text-sm ${
-              error
-                ? 'block border-rose-500/40 bg-rose-500/10 text-rose-300'
-                : 'hidden border-transparent bg-transparent text-transparent'
-            }`}
-          >
-            {error}
-          </div>
-
-          {tab === 'login' ? <LoginForm onError={setError} /> : <SignupForm onError={setError} />}
-
-          <div className="mt-6 text-center text-sm text-slate-400">
-            {tab === 'login' ? (
-              <>
-                New here?{' '}
-                <button className="font-semibold text-emerald-300" onClick={() => switchTab('signup')}>
-                  Create an account
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <button className="font-semibold text-emerald-300" onClick={() => switchTab('login')}>
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
-  );
+  </main>;
 }
